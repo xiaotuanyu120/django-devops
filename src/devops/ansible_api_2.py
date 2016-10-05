@@ -10,8 +10,10 @@ from __future__ import unicode_literals
 # TaskQueueManager, 负责初始化执行对象, 其run()函数负责执行play
 #
 # '''
-# TaskQueueManager(**, inventory=Inventory(**, host_list=hostsfile), options=options)
-# .run(Play().load(dict, variable_manager=VariableManager(), loader=DataLoader())
+# TaskQueueManager(
+#     **, inventory=Inventory(**, host_list=hostsfile), options=options)
+# .run(
+#     Play().load(dict, variable_manager=VariableManager(), loader=DataLoader())
 # '''
 #
 import json
@@ -76,55 +78,68 @@ class AnsibleRunner(object):
     def init_inventory(self, host_list='localhost'):
         # 创建inventory
         # 把inventory传递给variable_manager管理
-        self.inventory = Inventory(loader=loader,
-                    variable_manager=variable_manager,
+        self.inventory = Inventory(loader=self.loader,
+                    variable_manager=self.variable_manager,
                     host_list=host_list
                 )
         self.variable_manager.set_inventory(inventory)
 
-#
-# 结果回调类实例化
-#
-# Instantiate our ResultCallback for handling results as they come in
-#
-results_callback = ResultCallback()
 
 
 
-#
-# 创建playbook
-#
-# create play with tasks
-#
-play_source =  dict(
-        name = "Ansible Play",
-        hosts = 'localhost',
-        gather_facts = 'no',
-        tasks = [
-            dict(action=dict(module='shell', args='ls'), register='shell_out'),
-            dict(action=dict(module='debug', args=dict(msg='{{shell_out.stdout}}')))
-         ]
-    )
-play = Play().load(play_source, variable_manager=variable_manager, loader=loader)
+    def init_play(self, hosts='localhost', module='ping', args=''):
+        #
+        # 创建playbook
+        #
+        # create play with tasks
+        #
+        self.play_source =  dict(
+                name = "Ansible Play",
+                hosts = hosts,
+                gather_facts = 'no',
+                tasks = [
+                    dict(action=dict(module=module,
+                                    args=args),
+                        register='task_out'),
+                    dict(action=dict(module='debug',
+                                    args=dict(msg='{{task_out.stdout}}')))
+                 ]
+            )
+        self.play = Play().load(self.play_source,
+                        variable_manager=self.variable_manager,
+                        loader=self.loader
+                    )
 
-#
-# 通过TaskQueueManager().run()执行ansible，具体语法如下
-# "TaskQueueManager(指定inventory，loader，variable_manager, options，passwords, stdout_callback).run(play)"
-#
-# actually run it
-#
-tqm = None
-try:
-    tqm = TaskQueueManager(
-              inventory=inventory,
-              variable_manager=variable_manager,
-              loader=loader,
-              options=options,
-              passwords=passwords,
-              stdout_callback=results_callback,  # Use our custom callback instead of the ``default`` callback plugin
-          )
-    result = tqm.run(play)
-finally:
-    if tqm is not None:
 
-        tqm.cleanup()
+    def run_it(self):
+        #
+        # 结果回调类实例化
+        #
+        # Instantiate our ResultCallback for handling results as they come in
+        #
+        results_callback = ResultCallback()
+
+        #
+        # 通过TaskQueueManager().run()执行ansible，具体语法如下
+        # "TaskQueueManager(
+        # 指定inventory，loader，variable_manager,
+        #   options，passwords, stdout_callback
+        # ).run(play)"
+        #
+        # actually run it
+        #
+        tqm = None
+        try:
+            tqm = TaskQueueManager(
+                      inventory=self.inventory,
+                      variable_manager=self.variable_manager,
+                      loader=self.loader,
+                      options=self.options,
+                      passwords=self.passwords,
+                      stdout_callback=results_callback,
+                  )
+            result = tqm.run(play)
+        finally:
+            if tqm is not None:
+
+                tqm.cleanup()
