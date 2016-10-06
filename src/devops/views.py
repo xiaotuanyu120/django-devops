@@ -17,8 +17,8 @@ def dashboard(request):
         "hosts": hosts,
     }
     if(request.GET.get("run")):
-        cmd = request.GET.get("cmd"))
-        host = request.GET.get("host"))
+        cmd = request.GET.get("cmd")
+        host = request.GET.get("host")
 
         runner = AnsibleRunner()
         runner.init_inventory(host_list='localhost')
