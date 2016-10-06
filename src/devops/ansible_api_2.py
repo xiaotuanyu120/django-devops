@@ -47,7 +47,7 @@ class ResultCallback(CallbackBase):
 
 
 class AnsibleRunner(object):
-    def __init__(self, vault_pass, connection='local', module_path='',
+    def __init__(self, vault_pass='', connection='local', module_path='',
                 forks=100, become=None, become_method=None, become_user=None,
                 check=False):
         """
@@ -82,7 +82,7 @@ class AnsibleRunner(object):
                     variable_manager=self.variable_manager,
                     host_list=host_list
                 )
-        self.variable_manager.set_inventory(inventory)
+        self.variable_manager.set_inventory(self.inventory)
 
 
 
@@ -138,8 +138,17 @@ class AnsibleRunner(object):
                       passwords=self.passwords,
                       stdout_callback=results_callback,
                   )
-            result = tqm.run(play)
+            result = tqm.run(self.play)
         finally:
             if tqm is not None:
 
                 tqm.cleanup()
+        return result
+
+
+if __name__ == "__main__":
+    runner = AnsibleRunner()
+    runner.init_inventory(host_list='localhost')
+    runner.init_play(hosts='localhost', module='shell', args='ls')
+    result = runner.run_it()
+    print result

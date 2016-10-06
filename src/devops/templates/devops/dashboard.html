@@ -4,17 +4,24 @@
 
 <body>
   <div class="container">
-    <h2>ansible command form</h2>
-    <form>
+    <h2>ansible command execute</h2>
+    <form method= action=>
+
       <div class="form-group">
-        <label for="host">Host:</label>
-        <input type="host" class="form-control" id="host" placeholder="Enter host" name="host" value=''>
+        <label for="selhost">Host list (select one):</label>
+        <select class="form-control" id="selhost">
+          {% for host in hosts %}
+          <option>{{ host }}</option>
+          {% endfor %}
+        </select>
       </div>
+
       <div class="form-group">
         <label for="cmd">cmd:</label>
         <input type="cmd" class="form-control" id="cmd" placeholder="Enter cmd" name="cmd" value=''>
       </div>
       <button type="submit" class="btn btn-primary" name="run" value="Click">run</button>
+
     </form>
   </div>
 </body>
