@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.template import RequestContext
 from django.http import *
 from django.views.decorators.csrf import csrf_protect
+import os
 
 
 
@@ -33,21 +34,27 @@ def login_user(request):
                 return HttpResponseRedirect('/logged/')
     return render_to_response('devops/login.html', context_instance=RequestContext(request))
 
+
 def logged(request):
     return render(request, 'devops/logged.html')
+
 
 def dashboard(request):
     hosts = Host.objects.all()
     context = {
         "hosts": hosts,
     }
-    if(request.GET.get("run")):
-        cmd = request.GET.get("cmd")
-        host = request.GET.get("host")
-
-        runner = AnsibleRunner()
-        runner.init_inventory(host_list='localhost')
-        runner.init_play(hosts='localhost', module='shell', args='ls')
-        result = runner.run_it()
+    if request.POST:
+        if(request.POST.get("run")):
+            cmd = request.POST.get("cmd")
+            host = request.POST.get("selhost")
+            os.system(cmd)
+        # cmd = request.GET.get("cmd")
+        # host = request.GET.get("host")
+        #
+        # runner = AnsibleRunner()
+        # runner.init_inventory(host_list='localhost')
+        # runner.init_play(hosts='localhost', module='shell', args='ls')
+        # result = runner.run_it()
 
     return render(request, "devops/dashboard.html", context)
