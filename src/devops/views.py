@@ -9,7 +9,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.template import RequestContext
 from django.http import *
 from django.views.decorators.csrf import csrf_protect
-import os
+import os, sys
+from subprocess import Popen, PIPE, check_output
 
 
 
@@ -46,12 +47,19 @@ def dashboard(request):
     }
     if request.POST:
         if(request.POST.get("run")):
-            cmd = request.POST.get("cmd")
-            host = request.POST.get("selhost")
-            os.system(cmd)
-        # cmd = request.GET.get("cmd")
-        # host = request.GET.get("host")
-        #
+            # strip去两边空格，split+join去除中间重复空格，然后split转换字符串为list
+            cmd = ' '.join(request.POST.get('cmd').strip().split()).split()
+            print cmd
+            try:
+                stdout = check_output(cmd)
+            except:
+                stdout = "CMD :" + str(cmd) + " CMD error: " + str(sys.exc_info())
+            print stdout
+            context = {
+                "hosts": hosts,
+                "stdout": stdout,
+            }
+
         # runner = AnsibleRunner()
         # runner.init_inventory(host_list='localhost')
         # runner.init_play(hosts='localhost', module='shell', args='ls')
