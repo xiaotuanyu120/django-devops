@@ -1,32 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-{% include "devops/header.html" %}
+{% include "devops/main.html" %}
 
-<body>
-  <div class="container2" padding-top: 10000px>
-    <h1>ansible command execute</h1>
-    <form method="POST" action="">
-      {% csrf_token %}
+  <div class="container-fluid">
+    <div class="row">
 
-      <div class="form-group">
-        <label class="control-label" for="selhost">Host</label>
-        <select class="form-control" id="selhost" name="selhost">
-          {% for host in hosts %}
-          <option>{{ host }}</option>
-          {% endfor %}
-        </select>
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1>ansible command execute</h1>
+        <form method="POST" action="">
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label class="control-label" for="selhost">Host</label>
+            <select class="form-control" id="selhost" name="selhost">
+              {% for host in hosts %}
+              <option>{{ host }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="control-label" for="cmd">Command</label>
+            <input type="text" class="form-control" id="cmd" placeholder="Enter cmd" name="cmd" value=''>
+          </div>
+
+          <button type="submit" class="btn btn-primary" name="run" value="Click">run</button>
+        </form>
+        {{ stdout }}
       </div>
 
-      <div class="form-group">
-        <label class="control-label" for="cmd">Command</label>
-        <input type="text" class="form-control" id="cmd" placeholder="Enter cmd" name="cmd" value=''>
-      </div>
-
-      <button type="submit" class="btn btn-primary" name="run" value="Click">run</button>
-
-    </form>
-    {{ stdout }}
+    </div>
   </div>
-</body>
-
 </html>

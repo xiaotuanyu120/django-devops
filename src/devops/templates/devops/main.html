@@ -1,0 +1,70 @@
+
+<head>
+	<title>classmate</title>
+	<meta charset="utf-8" />
+
+  {% load static %}
+  <link rel="stylesheet" type="text/css" href="{% static 'devops/css/bootstrap.min.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'devops/css/dashboard.css' %}" />
+	<link rel="stylesheet" type="text/css" href="{% static 'devops/css/customized.css' %}" />
+	<!-- <link href="{% static 'devops/css/simple-sidebar.css' %}" rel="stylesheet"> -->
+  <!-- jQuery library -->
+  <script src={% static "devops/js/jquery.min.js" %}></script>
+  <!-- Latest compiled JavaScript -->
+  <script src={% static "devops/js/bootstrap.min.js" %}></script>
+</head>
+
+<body>
+	<!-- <div class="container"> -->
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">Classmate</a>
+      </div>
+
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#">Dashboard</a></li>
+          <li><a href="#">Settings</a></li>
+          <li><a href="#">Profile</a></li>
+          <li><a href="#">Help</a></li>
+        </ul>
+        <form class="navbar-form navbar-right inline">
+					{% if user_login_name %}
+						<p> <a class="btn btn-success" href="/profile/" role="button">welcome, {{ user_login_name }}</a></p>
+					{% else %}
+						<p> <a class="btn btn-success" href="/login/" role="button">Sign in</a></p>
+					{% endif %}
+        </form>
+      </div>
+
+    </div>
+  </nav>
+
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-3 col-md-2 sidebar">
+				<ul class="nav nav-sidebar">
+					<li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+					<li><a href="/dashboard/">Dashboard</a></li>
+				</ul>
+				<ul class="nav nav-sidebar">
+					<li><a href="#">Shortcuts</a></li>
+					<li><a href="#">Overview</a></li>
+					<li><a href="#">Events</a></li>
+					<li><a href="#">About</a></li>
+					<li><a href="#">Services</a></li>
+					<li><a href="#">Contact</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+</body>

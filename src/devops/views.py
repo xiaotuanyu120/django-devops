@@ -13,11 +13,14 @@ import os, sys
 from subprocess import Popen, PIPE, check_output
 
 
-
 def index(request):
-    if(request.GET.get("signin")):
-        print(request.GET.get("username"))
-    return render(request, "devops/index.html")
+    user_login_name = None
+    if request.user.is_authenticated():
+        user_login_name = request.user.username
+    context = {
+        'user_login_name': user_login_name
+    }
+    return render(request, "devops/index.html", context)
 
 
 @csrf_protect
@@ -37,12 +40,48 @@ def login_user(request):
 
 
 def logged(request):
-    return render(request, 'devops/logged.html')
+    user_login_name = None
+    if request.user.is_authenticated():
+        user_login_name = request.user.username
+    context = {
+        'user_login_name': user_login_name
+    }
+    return render(request, 'devops/logged.html', context)
 
 
+@login_required
+def profile(request):
+    user_login_name = request.user.username
+    firstname = request.user.first_name
+    lastname = request.user.last_name
+    email = request.user.email
+    groups = request.user.groups
+
+    if request.POST:
+        oldpassword = request.POST['oldpassword']
+        newpassword = request.POST['newpassword']
+        repeatnewpassword = request.POST['repeatnewpassword']
+        print oldpassword, newpassword, repeatnewpassword
+
+    context = {
+        'user_login_name': user_login_name,
+        'firstname': firstname,
+        'lastname': lastname,
+        'email': email,
+        'groups': groups,
+    }
+    return render(request, 'devops/profile.html', context)
+
+
+#
+# 只有登录过的用户才能访问dashboard
+#
+@login_required()
 def dashboard(request):
+    user_login_name = request.user.username
     hosts = Host.objects.all()
     context = {
+        'user_login_name': user_login_name,
         "hosts": hosts,
     }
     if request.POST:
@@ -58,6 +97,7 @@ def dashboard(request):
             context = {
                 "hosts": hosts,
                 "stdout": stdout,
+                'user_login_name': user_login_name,
             }
 
         # runner = AnsibleRunner()

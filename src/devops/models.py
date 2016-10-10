@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.db import models
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import SetPasswordForm
 
 # Create your models here.
 class Host(models.Model):
@@ -15,3 +17,5 @@ class Host(models.Model):
 
     def __unicode__(self):
         return self.host
+
+SetPasswordForm = SetPasswordForm

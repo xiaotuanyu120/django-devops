@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "devops/main.html" %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <ul class="list-group">
+        <label class="label-group-custom" for="user_login_name">username</label>
+        <li class="list-group-item-cust list-group-item" name="user_login_name"><span class="list-group-addon glyphicon glyphicon-user"></span>
+          &nbsp;{{ user_login_name }}</li>
+        <label class="label-group-custom" for="user_login_name">firstname</label>
+        <li class="list-group-item-cust list-group-item" name="firstname"><span class="list-group-addon glyphicon glyphicon-expand"></span>
+          &nbsp;{{ firstname }}</li>
+        <label class="label-group-custom" for="user_login_name">lastname</label>
+        <li class="list-group-item-cust list-group-item" name="lastname"><span class="list-group-addon glyphicon glyphicon-expand"></span>
+          &nbsp;{{ lastname }}</li>
+        <label class="label-group-custom" for="user_login_name">email</label>
+        <li class="list-group-item-cust list-group-item" name="email"><span class="list-group-addon glyphicon glyphicon-envelope"></span>
+          &nbsp;{{ email }}</li>
+        <label class="label-group-custom" for="user_login_name">groups</label>
+        <li class="list-group-item-cust list-group-item" name="groups"><span class="list-group-addon glyphicon glyphicon-th-large"></span>
+          &nbsp;{{ groups }}</li>
+      </ul>
+      <p><a href="/admin/password_change/">123</a></p>
+    </div>
+
+
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <h2>Changing Password</h2>
+        <hr class="style-one">
+        {% if request.user.is_authenticated %}
+
+        {% endif %}
+      <form method='POST' action="">
+        <div class="form-group">
+          <label class="control-label" for="username">Old Password</label>
+          <div class="controls">
+            <input class="form-control" type="password" name="oldpassword" placeholder="Old Password" value="{{ csrf_token }}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label" for="password">New Password</label>
+          <div class="controls">
+            <input class="form-control" type="password" name="newpassword" placeholder="New Password" value="{{ csrf_token }}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="control-label" for="password">Repeat New Password</label>
+          <div class="controls">
+            <input class="form-control" type="password" name="repeatnewpassword" placeholder="Repeat New Password" value="{{ csrf_token }}">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="controls">
+            <button type="submit" class="btn">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</html>
