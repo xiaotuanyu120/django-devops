@@ -2,13 +2,19 @@
 from __future__ import unicode_literals
 from django import forms
 # from django.contrib.auth.forms import PasswordChangeForm
-from .models import Host
+from .models import Host, Brand
 
 
 class HostForm(forms.ModelForm):
     class Meta:
         model = Host
-        fields = ['PIC', 'host', 'hostname']
+        fields = ['host', 'brand', 'service_type']
+
+
+class BrandForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = ['brand']
 
 
 class PasswordChangeFormCustom(forms.Form):

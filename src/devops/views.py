@@ -10,7 +10,7 @@ from django.template import RequestContext
 from django.http import *
 from django.views.decorators.csrf import csrf_protect
 import os, sys
-from subprocess import Popen, PIPE, check_output
+from subprocess import check_output
 from django.contrib.auth.models import User
 from .forms import PasswordChangeFormCustom
 
