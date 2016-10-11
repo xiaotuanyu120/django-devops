@@ -11,6 +11,8 @@ from django.http import *
 from django.views.decorators.csrf import csrf_protect
 import os, sys
 from subprocess import Popen, PIPE, check_output
+from django.contrib.auth.models import User
+from .forms import PasswordChangeFormCustom
 
 
 def index(request):
@@ -49,27 +51,43 @@ def logged(request):
     return render(request, 'devops/logged.html', context)
 
 
-@login_required
+# @login_required
 def profile(request):
+    if not request.user.is_authenticated():
+        return render(request, "devops/login.html")
     user_login_name = request.user.username
     firstname = request.user.first_name
     lastname = request.user.last_name
     email = request.user.email
     groups = request.user.groups
 
-    if request.POST:
-        oldpassword = request.POST['oldpassword']
-        newpassword = request.POST['newpassword']
-        repeatnewpassword = request.POST['repeatnewpassword']
-        print oldpassword, newpassword, repeatnewpassword
-
+    form = PasswordChangeFormCustom(request.POST or None)
     context = {
         'user_login_name': user_login_name,
         'firstname': firstname,
         'lastname': lastname,
         'email': email,
         'groups': groups,
+        'form': form,
     }
+    if request.POST:
+        if form.is_valid():
+            old = request.POST.get("oldpassword")
+            new = request.POST.get("newpassword")
+            new2 = request.POST.get("repeatnewpassword")
+            u = User.objects.get(username=request.user.username)
+            u.set_password(new)
+            u.save()
+
+            changed_password = "your password have been changed!"
+            context = {
+                'user_login_name': user_login_name,
+                'firstname': firstname,
+                'lastname': lastname,
+                'email': email,
+                'groups': groups,
+                'changed_password': changed_password,
+            }
     return render(request, 'devops/profile.html', context)
 
 
