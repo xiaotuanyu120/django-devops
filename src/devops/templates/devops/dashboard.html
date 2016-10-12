@@ -11,6 +11,15 @@
           {% csrf_token %}
 
           <div class="form-group">
+            <label class="control-label" for="selbrand">Brand</label>
+            <select class="form-control" id="selbrand" name="selbrand">
+              {% for brand in brands %}
+              <option>{{ brand }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
             <label class="control-label" for="selhost">Host</label>
             <select class="form-control" id="selhost" name="selhost">
               {% for host in hosts %}

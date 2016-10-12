@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import render,render_to_response,redirect
-from .models import Host
+from .models import Host, Brand
 from .ansible_api_2 import AnsibleRunner
 
 from django.contrib.auth.decorators import login_required
@@ -98,9 +98,11 @@ def profile(request):
 def dashboard(request):
     user_login_name = request.user.username
     hosts = Host.objects.all()
+    brands = Brand.objects.all()
     context = {
         'user_login_name': user_login_name,
         "hosts": hosts,
+        "brands": brands,
     }
     if request.POST:
         if(request.POST.get("run")):
@@ -111,11 +113,11 @@ def dashboard(request):
                 stdout = check_output(cmd)
             except:
                 stdout = "CMD :" + str(cmd) + " CMD error: " + str(sys.exc_info())
-            print stdout
             context = {
+                'user_login_name': user_login_name,
                 "hosts": hosts,
                 "stdout": stdout,
-                'user_login_name': user_login_name,
+                "brands": brands,
             }
 
         # runner = AnsibleRunner()
