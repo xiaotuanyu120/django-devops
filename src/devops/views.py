@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.shortcuts import render,render_to_response,redirect
+from django.shortcuts import render, render_to_response
 from .models import Host, Brand
-from .ansible_api_2 import AnsibleRunner
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.template import RequestContext
-from django.http import *
+from django.http import HttpResponseRedirect, HttpResponse
 from django.views.decorators.csrf import csrf_protect
-import os, sys
+import sys
+import json
 from subprocess import check_output
 from django.contrib.auth.models import User
 from .forms import PasswordChangeFormCustom
@@ -38,7 +37,8 @@ def login_user(request):
             if user.is_active:
                 login(request, user)
                 return HttpResponseRedirect('/logged/')
-    return render_to_response('devops/login.html', context_instance=RequestContext(request))
+    return render_to_response('devops/login.html',
+                        context_instance=RequestContext(request))
 
 
 def logged(request):
@@ -55,6 +55,7 @@ def logged(request):
 def profile(request):
     if not request.user.is_authenticated():
         return render(request, "devops/login.html")
+    # get information of logined user
     user_login_name = request.user.username
     firstname = request.user.first_name
     lastname = request.user.last_name
@@ -72,9 +73,7 @@ def profile(request):
     }
     if request.POST:
         if form.is_valid():
-            old = request.POST.get("oldpassword")
             new = request.POST.get("newpassword")
-            new2 = request.POST.get("repeatnewpassword")
             u = User.objects.get(username=request.user.username)
             u.set_password(new)
             u.save()
@@ -110,7 +109,7 @@ def dashboard(request):
             try:
                 stdout = check_output(cmd)
             except:
-                stdout = "CMD :" + str(cmd) + " CMD error: " + str(sys.exc_info())
+                stdout = "CMD:" + str(cmd) + " CMD error:" + str(sys.exc_info())
             context = {
                 'user_login_name': user_login_name,
                 "hosts": hosts,
@@ -124,3 +123,16 @@ def dashboard(request):
         # result = runner.run_it()
 
     return render(request, "devops/dashboard.html", context)
+
+
+@login_required
+def form_interaction(request):
+    if request.POST:
+        selected_brand = request.POST.get('selbrand')
+        host_list = []
+        filtered_host = Host.objects.filter(brand=selected_brand)
+        for brand_item in filtered_host:
+            if filtered_host.count(brand_item.brand) == 0:
+                host_list.append(brand_item.brand)
+        host = host_list
+        return HttpResponse(json.dumps(host), content_type="application/json")
