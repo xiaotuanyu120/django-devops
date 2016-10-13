@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from django.shortcuts import render, render_to_response
-from .models import Host, Brand
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.template import RequestContext
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.decorators.csrf import csrf_protect
-import sys
-import json
 from subprocess import check_output
 from django.contrib.auth.models import User
+from .models import Host, Brand
 from .forms import PasswordChangeFormCustom
+import sys
+import json
+
 
 
 def index(request):
@@ -96,14 +97,23 @@ def profile(request):
 def dashboard(request):
     if not request.user.is_authenticated():
         return render(request, "devops/login.html")
+
+    # username for main.html
     user_login_name = request.user.username
+
+    # initial hosts and brands for selection form
     hosts = Host.objects.all()
-    brands = Brand.objects.all()
+    brands = ["请选择产品品牌"]
+    for brand in Brand.objects.all():
+        if not brand in brands:
+            brands.append(brand)
     context = {
         'user_login_name': user_login_name,
         "hosts": hosts,
         "brands": brands,
     }
+
+    # function for command running
     if request.POST:
         if(request.POST.get("run")):
             # strip去两边空格，split+join去除中间重复空格，然后split转换字符串为list
@@ -128,14 +138,16 @@ def dashboard(request):
     return render(request, "devops/dashboard.html", context)
 
 
+@csrf_protect
 @login_required
 def form_interaction(request):
     if request.POST:
         selected_brand = request.POST.get('selbrand')
         host_list = []
-        filtered_host = Host.objects.filter(brand=selected_brand)
+        filtered_host = Host.objects.filter(brand__brand=selected_brand)
         for brand_item in filtered_host:
-            if filtered_host.count(brand_item.brand) == 0:
-                host_list.append(brand_item.brand)
-        host = host_list
-        return HttpResponse(json.dumps(host), content_type="application/json")
+            if host_list.count(brand_item) == 0:
+                brand_item = str(brand_item)
+                host_list.append(brand_item)
+        host = json.dumps(host_list)
+        return HttpResponse(host, content_type="application/json")

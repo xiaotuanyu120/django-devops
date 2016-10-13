@@ -4,10 +4,47 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
+  $.ajaxSetup({
+     beforeSend: function(xhr, settings) {
+         function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                     // Does this cookie string begin with the name we want?
+                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                         break;
+                     }
+                 }
+             }
+             return cookieValue;
+         }
+         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+             // Only send the token to relative URLs i.e. locally.
+             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+         }
+     }
+});
+
   $("#selbrand").change(function(){
-    $("#test_p").text($("#selbrand").val())
+    selbrand = $("#selbrand").val();
+    data = {selbrand: selbrand};
+
+    $.ajax({
+            url: "/form_interaction/",
+            data: data,
+            type: 'post',
+            success: function(host){
+              $("#selhost").empty();
+              $("#selhost").append("<option>"+"请选择主机"+"</option>");
+              $.each(host,function(i){
+                  $("#selhost").append("<option>"+host[i]+"</option>")
+                })
+            }
+    })
   });
-  $("#test_p").text($("#selbrand option:selected").val())
 });
 </script>
 
@@ -31,9 +68,7 @@ $(document).ready(function(){
           <div class="form-group">
             <label class="control-label" for="selhost">Host</label>
             <select class="form-control" id="selhost" name="selhost">
-              {% for host in hosts %}
-              <option>{{ host }}</option>
-              {% endfor %}
+              <option>select brand first</option>
             </select>
             <p id="test_p"></p>
           </div>

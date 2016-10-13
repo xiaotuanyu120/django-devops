@@ -2,16 +2,6 @@
 from __future__ import unicode_literals
 from django.db import models
 
-# class Staff(models.Model):
-#     staff = models.CharField(max_length=20)
-#     fullname = models.CharField(max_length=30)
-#
-#     def __str__(self):
-#         return self.staff
-#
-#     def __unicode__(self):
-#         return self.staff
-
 
 class Brand(models.Model):
     brand = models.CharField(max_length=20)
