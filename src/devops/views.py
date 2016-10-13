@@ -62,6 +62,7 @@ def profile(request):
     email = request.user.email
     groups = request.user.groups
 
+    # form for password change
     form = PasswordChangeFormCustom(request.POST or None)
     context = {
         'user_login_name': user_login_name,
@@ -71,13 +72,15 @@ def profile(request):
         'groups': groups,
         'form': form,
     }
+
+    # password changing function
     if request.POST:
         if form.is_valid():
             new = request.POST.get("newpassword")
             u = User.objects.get(username=request.user.username)
             u.set_password(new)
             u.save()
-
+            # replace form with a password changed message
             changed_password = "your password have been changed!"
             context = {
                 'user_login_name': user_login_name,
