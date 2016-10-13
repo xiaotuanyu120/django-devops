@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 from django.db import models
 
-
 # class Staff(models.Model):
 #     staff = models.CharField(max_length=20)
 #     fullname = models.CharField(max_length=30)
@@ -33,7 +32,7 @@ class Host(models.Model):
     }
     host = models.GenericIPAddressField()
     hosttag = models.CharField(max_length=20)
-    brand = models.ForeignKey(Brand, null=True)
+    brand = models.ForeignKey(Brand)
     service_type = models.CharField(max_length=3, choices=service_type_list, default='web')
     created = models.DateTimeField(auto_now_add=True, auto_now=False)
     updated = models.DateTimeField(auto_now_add=False, auto_now=True)

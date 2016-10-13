@@ -24,6 +24,4 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^', include('devops.urls')),
-    # url('^', include('django.contrib.auth.urls')),
-    # url('^change-password/$', auth_views.password_change, {'template_name': 'devops/change-password.html'}),
 ]

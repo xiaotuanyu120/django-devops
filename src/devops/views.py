@@ -91,11 +91,9 @@ def profile(request):
     return render(request, 'devops/profile.html', context)
 
 
-#
-# 只有登录过的用户才能访问dashboard
-#
-@login_required()
 def dashboard(request):
+    if not request.user.is_authenticated():
+        return render(request, "devops/login.html")
     user_login_name = request.user.username
     hosts = Host.objects.all()
     brands = Brand.objects.all()

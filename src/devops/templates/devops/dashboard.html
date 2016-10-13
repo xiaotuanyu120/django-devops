@@ -2,6 +2,15 @@
 <html lang="en">
 {% include "devops/main.html" %}
 
+<script type="text/javascript">
+$(document).ready(function(){
+  $("#selbrand").change(function(){
+    $("#test_p").text($("#selbrand").val())
+  });
+  $("#test_p").text($("#selbrand option:selected").val())
+});
+</script>
+
   <div class="container-fluid">
     <div class="row">
 
@@ -26,6 +35,7 @@
               <option>{{ host }}</option>
               {% endfor %}
             </select>
+            <p id="test_p"></p>
           </div>
 
           <div class="form-group">

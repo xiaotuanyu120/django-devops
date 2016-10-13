@@ -3,3 +3,4 @@ Vagrantfile
 .vagrant
 *db.sqlite3*
 migrations
+newsrc
