@@ -1,6 +1,6 @@
 
 <head>
-	<title>classmate</title>
+	<title>classmate Tower</title>
 	<meta charset="utf-8" />
 
   {% load static %}
@@ -12,6 +12,7 @@
   <script src={% static "devops/js/jquery.min.js" %}></script>
   <!-- Latest compiled JavaScript -->
   <script src={% static "devops/js/bootstrap.min.js" %}></script>
+	<script src={% static "devops/js/custom.js" %}></script>
 </head>
 
 <body>
@@ -19,30 +20,29 @@
 	<nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container-fluid">
 
-      <div class="navbar-header">
+      <div class="navbar-header" style="margin-left:88px">
         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/">Classmate</a>
+        <a class="navbar-brand" href="/home">ClassMate Tower</a>
       </div>
 
-      <div id="navbar" class="navbar-collapse collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="#">Dashboard</a></li>
-          <li><a href="#">Settings</a></li>
-          <li><a href="#">Profile</a></li>
-          <li><a href="#">Help</a></li>
-        </ul>
-        <form class="navbar-form navbar-right inline">
-					{% if user_login_name %}
-						<p> <a class="btn btn-success" href="/profile/" role="button">welcome, {{ user_login_name }}</a></p>
+      <div id="navbar" class="navbar-collapse collapse navbar-right inline">
+					{% if request.user.username %}
+						<form class="navbar-form navbar-right inline" method='POST' action="/logout/">
+			        {% csrf_token %}
+							<a class="btn btn-primary" href="/profile/" role="button">welcome, {{ request.user.username }}</a>
+			        <button type="submit" class="btn btn-danger">Logout</button>
+			      </form>
+
 					{% else %}
-						<p> <a class="btn btn-success" href="/login/" role="button">Sign in</a></p>
+					<form class="navbar-form navbar-right inline">
+						<p> <a class="btn btn-primary" href="/login/" role="button">Sign in</a></p>
+					</form>
 					{% endif %}
-        </form>
       </div>
 
     </div>
@@ -51,17 +51,12 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-sm-3 col-md-2 sidebar">
-				<ul class="nav nav-sidebar">
-					<li class="active"><a href="/">Overview <span class="sr-only">(current)</span></a></li>
-					<li><a href="/dashboard/">Dashboard</a></li>
-				</ul>
-				<ul class="nav nav-sidebar">
-					<li><a href="#">Shortcuts</a></li>
-					<li><a href="#">Overview</a></li>
-					<li><a href="#">Events</a></li>
-					<li><a href="#">About</a></li>
-					<li><a href="#">Services</a></li>
-					<li><a href="#">Contact</a></li>
+			  <ul class="nav nav-pills nav-stacked">
+					<li><a href="/home/">首页</a></li>
+					<li><a href="/profile/">个人资料</a></li>
+					<li><a href="/dashboard/">控制台</a></li>
+					<li><a href="/record/">操作记录</a></li>
+					<li><a href="">代码备份回滚(开发中)</a></li>
 				</ul>
 			</div>
 		</div>

@@ -23,10 +23,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '8ctquu498ludm7@)5a(3k2vxpd=^1@dsbyk01t3%zyu&($&stc'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+LOGIN_URL = '/login'
 
 # Application definition
 
@@ -88,7 +89,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'PRC'
 
 USE_I18N = True
 
@@ -100,6 +101,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 AUTH_PROFILE_MODULE = 'devops.UserProfile'
+
+# ansible setting
+ANSIBLE_DIR = '/home/ansible-tomcat'
+ANSIBLE_PLAYBOOK_PATH = '/usr/bin/ansible-playbook'

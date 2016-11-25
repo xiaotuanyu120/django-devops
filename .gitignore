@@ -1,6 +1,3 @@
 *.pyc
-Vagrantfile
-.vagrant
-*db.sqlite3*
-migrations
-newsrc
+db.sqlite3
+/static/*

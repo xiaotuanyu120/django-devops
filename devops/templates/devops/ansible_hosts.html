@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+{% include "devops/main.html" %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      {% for group,subgroups in top_group.items %}
+      <div class="jumbotron">
+        <h2><strong>{{ group }}</strong></h2>
+        {% for subgroup,hosts in subgroups.items %}
+          <h3>{{ subgroup }}</h3>
+          {% for host in hosts %}
+          <p> {{ host }}</p>
+          {% endfor %}
+          <br>
+        {% endfor %}
+      </div>
+      {% endfor %}
+      {% for group,hosts in sub_group.items %}
+      <div class="jumbotron">
+        <h3><strong>{{ group }}</strong></h3>
+        {% for host in hosts %}
+          <p>{{ host }}</p>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+</html>

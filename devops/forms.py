@@ -14,7 +14,8 @@ class HostForm(forms.ModelForm):
 class BrandForm(forms.ModelForm):
     class Meta:
         model = Brand
-        fields = ['brand']
+        fields = ['name', 'brand']
+        # fields = ['brand']
 
 
 class PasswordChangeFormCustom(forms.Form):

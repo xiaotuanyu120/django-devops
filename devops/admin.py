@@ -11,7 +11,7 @@ class HostAdmin(admin.ModelAdmin):
 
 
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('__unicode__', 'created', 'updated')
+    list_display = ('name', 'brand','created', 'updated')
     form = BrandForm
 
 # admin.site.register(Hosts, HostAdmin)

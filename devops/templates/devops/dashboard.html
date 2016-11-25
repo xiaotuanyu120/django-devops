@@ -2,87 +2,112 @@
 <html lang="en">
 {% include "devops/main.html" %}
 
-<script type="text/javascript">
+<script>
 $(document).ready(function(){
+  $("#breath-light").hide();
+
   $.ajaxSetup({
-     beforeSend: function(xhr, settings) {
-         function getCookie(name) {
-             var cookieValue = null;
-             if (document.cookie && document.cookie != '') {
-                 var cookies = document.cookie.split(';');
-                 for (var i = 0; i < cookies.length; i++) {
-                     var cookie = jQuery.trim(cookies[i]);
-                     // Does this cookie string begin with the name we want?
-                     if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                         break;
-                     }
-                 }
-             }
-             return cookieValue;
-         }
-         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-             // Only send the token to relative URLs i.e. locally.
-             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-         }
-     }
-});
-
-  $("#selbrand").change(function(){
-    selbrand = $("#selbrand").val();
-    data = {selbrand: selbrand};
-
-    $.ajax({
-            url: "/form_interaction/",
-            data: data,
-            type: 'post',
-            success: function(host){
-              $("#selhost").empty();
-              $("#selhost").append("<option>"+"请选择主机"+"</option>");
-              $.each(host,function(i){
-                  $("#selhost").append("<option>"+host[i]+"</option>")
-                })
+    beforeSend: function(xhr, settings) {
+      function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
             }
-    })
+          }
+        }
+        return cookieValue;
+      }
+
+      if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+        // Only send the token to relative URLs i.e. locally.
+        xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+      }
+
+      // beforeSend, show processing bar and disable restart button
+      $("#breath-light").show();
+      $("#btn1").attr("disabled", "true");
+      $("#terminal-output").html('');
+    }
   });
+
+  function button_status(){
+     selbrand = $("#selbrand").val();
+     sertype = $("#sertype").val();
+     if (selbrand == "请选择产品" || sertype == "请选择服务类型"){
+       $("#btn1").prop("disabled", true);
+     }
+     else {
+       $("#btn1").prop("disabled", false);
+     }
+  }
+
+  $("#selbrand, #sertype").change(function(){
+     button_status();
+  });
+
+  $("#btn1").click(function(){
+    data = {selbrand: $("#selbrand").val(),
+            sertype: $("#sertype").val(),
+            user: $(this).attr("user"),
+
+    };
+    $.ajax({
+      url: '/run/',
+      type: 'POST',
+      data: data,
+      dataType: 'json',
+      success: function(redata) {
+        for (i=0;i<redata.length;i++) {
+          $("#terminal-output").append(redata[i] + "<br>");
+        }
+      }
+    });
+  });
+
+  $( document ).ajaxComplete(function(event, request, settings ) {
+    $("#breath-light").hide();
+    $("#brandform")[0].reset();
+  });
+
 });
 </script>
-
   <div class="container-fluid">
-    <div class="row">
-
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1>TOMCAT HANDLER</h1>
-        <form method="POST" action="">
-          {% csrf_token %}
-
-          <div class="form-group">
-            <label class="control-label" for="selbrand">Brand</label>
-            <select class="form-control" id="selbrand" name="selbrand">
-              {% for brand in brands %}
-              <option>{{ brand }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="control-label" for="selhost">Host</label>
-            <select class="form-control" id="selhost" name="selhost">
-              <option>select brand first</option>
-            </select>
-            <p id="test_p"></p>
-          </div>
-
-          <div class="form-group">
-            <label class="control-label" for="cmd">Command</label>
-            <input type="text" class="form-control" id="cmd" placeholder="Enter cmd" name="cmd" value=''>
-          </div>
-
-          <button type="submit" class="btn btn-primary" name="run" value="Click">run</button>
-        </form>
-        {{ stdout }}
-      </div>
-
+        <div class="col-sm-9 col-md-6 main">
+          <h3>TOMCAT HANDLER</h3>
+          <form id="brandform" method="" action="">
+            <!-- {% csrf_token %} -->
+            <div class="form-group">
+              <label class="control-label" for="selbrand">Brand</label>
+              <select class="form-control" id="selbrand" name="selbrand">
+                <option>请选择产品</option>
+                {% for brand in brands %}
+                <option>{{ brand }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="control-label" for="sertype">Host</label>
+              <select class="form-control" id="sertype" name="sertype">
+                <option>请选择服务类型</option>
+                <option>web</option>
+                <option>service</option>
+              </select>
+            </div>
+          </form>
+          <button type="submit" class="btn btn-danger" value='Click' id="btn1" user={{ request.user.username }} disabled>restart</button>
+          <label id="breath-light">执行中</label>
+        </div>
+        <div class="col-sm-9 col-md-7 main">
+          <label class="control-label" for="terminal-output">执行结果</label>
+          <p id="terminal-output" style="background-color:black;min-height:150px;color:rgb(45,232,29)"><p>
+        </div>
     </div>
   </div>
 </html>

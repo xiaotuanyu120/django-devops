@@ -1,28 +1,31 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.shortcuts import render, render_to_response
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login, logout
-from django.template import RequestContext
-from django.http import HttpResponseRedirect, HttpResponse
-from django.views.decorators.csrf import csrf_protect
-from subprocess import check_output
-from django.contrib.auth.models import User
-from .models import Host, Brand
-from .forms import PasswordChangeFormCustom
+import os
 import sys
 import json
+from datetime import datetime
+from subprocess import check_output, Popen
 
+from django.http import *
+from django.shortcuts import render,render_to_response,redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.template import RequestContext
+from django.views.decorators.csrf import csrf_protect
+from django.conf import settings
+
+from .models import Host, Brand, Record
+from .forms import PasswordChangeFormCustom
+from .hosts_parser import HostsParser
 
 
 def index(request):
-    user_login_name = None
-    if request.user.is_authenticated():
-        user_login_name = request.user.username
-    context = {
-        'user_login_name': user_login_name
-    }
-    return render(request, "devops/index.html", context)
+    return render(request, "devops/login.html")
+
+
+def home(request):
+    return render(request, "devops/index.html")
 
 
 @csrf_protect
@@ -37,54 +40,42 @@ def login_user(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return HttpResponseRedirect('/logged/')
-    return render_to_response('devops/login.html',
-                        context_instance=RequestContext(request))
+                return HttpResponseRedirect('/home/')
+    return render_to_response('devops/login.html', context_instance=RequestContext(request))
 
 
-def logged(request):
-    user_login_name = None
-    if request.user.is_authenticated():
-        user_login_name = request.user.username
-    context = {
-        'user_login_name': user_login_name
-    }
-    return render(request, 'devops/logged.html', context)
+@login_required
+def logout_user(request):
+    logout(request)
+    return redirect('login_user')
 
 
-# @login_required
+@login_required
 def profile(request):
-    if not request.user.is_authenticated():
-        return render(request, "devops/login.html")
-    # get information of logined user
-    user_login_name = request.user.username
     firstname = request.user.first_name
     lastname = request.user.last_name
     email = request.user.email
     groups = request.user.groups
 
-    # form for password change
     form = PasswordChangeFormCustom(request.POST or None)
     context = {
-        'user_login_name': user_login_name,
         'firstname': firstname,
         'lastname': lastname,
         'email': email,
         'groups': groups,
         'form': form,
     }
-
-    # password changing function
     if request.POST:
         if form.is_valid():
+            old = request.POST.get("oldpassword")
             new = request.POST.get("newpassword")
+            new2 = request.POST.get("repeatnewpassword")
             u = User.objects.get(username=request.user.username)
             u.set_password(new)
             u.save()
-            # replace form with a password changed message
+
             changed_password = "your password have been changed!"
             context = {
-                'user_login_name': user_login_name,
                 'firstname': firstname,
                 'lastname': lastname,
                 'email': email,
@@ -94,60 +85,129 @@ def profile(request):
     return render(request, 'devops/profile.html', context)
 
 
-def dashboard(request):
-    if not request.user.is_authenticated():
-        return render(request, "devops/login.html")
+def _record(record_list):
+    record = Record(user=record_list['user'],
+                    brand=record_list['brand'],
+                    from_ip=record_list['from_ip'],
+                    cmd=record_list['cmd'],
+                    action=record_list['action'])
+    record.save()
 
-    # username for main.html
-    user_login_name = request.user.username
 
-    # initial hosts and brands for selection form
-    hosts = Host.objects.all()
-    brands = ["请选择产品品牌"]
-    for brand in Brand.objects.all():
-        if not brand in brands:
-            brands.append(brand)
+@login_required
+def record(request):
+    filter_fields = {f.verbose_name: f.name for f in Record._meta.get_fields() \
+            if f.verbose_name not in ['ID', u'命令', u'动作']}
+    filter_str = str(datetime.now()).split()[0]
+    filter_field = 'action_time'
+    if request.POST.get('filter_str') and request.POST.get('filter_field'):
+        filter_str = request.POST.get('filter_str')
+        filter_field = filter_fields[request.POST.get('filter_field')]
+    filter_field_contains = '%s__contains' % filter_field
+    my_filter = {}
+    my_filter[filter_field_contains] = filter_str
+    try:
+        records = Record.objects.filter(**my_filter).order_by('-action_time', 'user').values()
+    except:
+        records = Record.objects.filter(action_time__contains=filter_str).order_by('-action_time', 'user').values()
+
     context = {
-        'user_login_name': user_login_name,
+        'records': records,
+        'filter_fields': filter_fields
+    }
+    return render(request,"devops/record.html", context)
+
+
+def _execute(cmd):
+    '''
+    execute cmd
+    '''
+    result = {}
+    try:
+        stdout = check_output(cmd)
+        stderr = ''
+    except:
+        stdout = ''
+        stderr = str(sys.exc_info())
+    result['stdout'] = stdout
+    result['stderr'] = stderr
+    return result
+
+
+def execute(request):
+    if request.method == 'POST' and request.is_ajax():
+        ansible_dir = settings.ANSIBLE_DIR
+        ansible_playbook_path = settings.ANSIBLE_PLAYBOOK_PATH
+        inventory = "%s/%s" % (ansible_dir, 'hosts')
+        yml_file = "%s/%s" % (ansible_dir, 'main.yml')
+        selbrand = request.POST['selbrand']
+        sertype = request.POST['sertype']
+        args = "host=%s_%s" % (Brand.objects.filter(name=selbrand).values()[0]["brand"], sertype)
+        cmd = [ansible_playbook_path, '-i', inventory, yml_file, "-e", args]
+        cmd_exec = _execute(cmd)
+        stdout = cmd_exec['stdout']
+        stderr = cmd_exec['stderr']
+        print stdout
+        if not stdout:
+            stdout = stderr
+        else:
+            try:
+                record_list = {
+                    'user': request.POST['user'],
+                    'brand': selbrand,
+                    'from_ip': user_ip(request),
+                    'cmd': ' '.join(cmd),
+                    'action': 'TR',
+                }
+            except:
+                print sys.exc_info()[0]
+            _record(record_list)
+
+        try:
+            stdout = str(stdout)
+            stdout = stdout.splitlines()
+        except:
+            e = sys.exc_info()[0]
+            print "error" + str(e)
+
+        return HttpResponse(json.dumps(stdout), content_type = "application/json")
+    return HttpResponseNotFound('<h1>Page not found</h1>')
+
+
+def user_ip(input):
+    try:
+        return input.META.get('HTTP_X_FORWARDED_FOR').split(',')[0]
+    except:
+        return input.META.get('REMOTE_ADDR')
+
+
+@login_required
+def dashboard(request):
+    hosts = Host.objects.all()
+    brands = Brand.objects.all()
+    context = {
         "hosts": hosts,
         "brands": brands,
     }
-
-    # function for command running
-    if request.POST:
-        if(request.POST.get("run")):
-            # strip去两边空格，split+join去除中间重复空格，然后split转换字符串为list
-            cmd = ' '.join(request.POST.get('cmd').strip().split()).split()
-            print cmd
-            try:
-                stdout = check_output(cmd)
-            except:
-                stdout = "CMD:" + str(cmd) + " CMD error:" + str(sys.exc_info())
-            context = {
-                'user_login_name': user_login_name,
-                "hosts": hosts,
-                "stdout": stdout,
-                "brands": brands,
-            }
-
-        # runner = AnsibleRunner()
-        # runner.init_inventory(host_list='localhost')
-        # runner.init_play(hosts='localhost', module='shell', args='ls')
-        # result = runner.run_it()
-
     return render(request, "devops/dashboard.html", context)
 
 
-@csrf_protect
 @login_required
-def form_interaction(request):
-    if request.POST:
-        selected_brand = request.POST.get('selbrand')
-        host_list = []
-        filtered_host = Host.objects.filter(brand__brand=selected_brand)
-        for brand_item in filtered_host:
-            if host_list.count(brand_item) == 0:
-                brand_item = str(brand_item)
-                host_list.append(brand_item)
-        host = json.dumps(host_list)
-        return HttpResponse(host, content_type="application/json")
+def ansible_hosts(request):
+    hosts_file = "%s/%s" % (settings.ANSIBLE_DIR, 'hosts')
+    hosts = HostsParser()
+    hosts_list = hosts.parser(hosts_file)
+
+    top_group = {}
+    sub_group = {}
+    for li in hosts_list:
+        if type(hosts_list[li]) is dict:
+            top_group[li] = hosts_list[li]
+        elif type(hosts_list[li]) is list:
+            sub_group[li] = hosts_list[li]
+
+    context = {
+        "top_group": top_group,
+        "sub_group": sub_group
+    }
+    return render(request, "devops/ansible_hosts.html", context)

@@ -1,36 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
-{% include "devops/main.html" %}
+<html>
+<head>
+   <title>Classmate Tower Login</title>
+    {% load static %}
+   <link href={% static "devops/css/bootstrap.min.css" %} rel="stylesheet">
+    <link href={% static "devops/css/bootstrap.css" %} rel="stylesheet">
+    <link href={% static "devops/css/bootstrap-theme.min.css" %} rel="stylesheet">
+   <script src={% static "devops/js/jquery.min.js" %}></script>
+    <script src={% static "devops/js/bootstrap.js" %}></script>
+   <script src={% static "bootstrap/js/bootstrap.min.js" %}></script>
+</head>
 
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-      <div id="login">
-        {% block main %}
-        <form class="form-horizontal" name="LoginForm" action="/login/" method="post">
-        {% csrf_token %}
-          <div class="form-group">
-            <label class="control-label" for="username">Username</label>
-            <div class="controls">
-              <input class="form-control" type="text" id="username" name="username"  placeholder="Username">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="control-label" for="password">Password</label>
-            <div class="controls">
-              <input class="form-control" type="password" name="password" id="password" placeholder="Password">
-            </div>
-          </div>
-          <div class="form-group">
-            <div class="controls">
-              <button type="submit" class="btn">Login</button>
-            </div>
-          </div>
-        </form>
-        {% endblock %}
-      </div>
+<body style="background:url({% static "devops/src/333385.jpg" %});background-size:100%;">
+  <div style="text-align:center;color:#F00;font-size: 20px;padding:150px;">
+    <div style="color:#F00;font-size: 22px;" >
+      <span id="vader"></span>
     </div>
+
+    <div style="color:#F00;font-size: 16px;margin:20px 0px 0px 0px;">
+      <span id="luke"></span>
+    </div>
+
+    <script src={% static "devops/js/theater.js" %}></script>
+
+    <form  action="/login/" method="POST"   enctype="multipart/form-data" >
+     {% csrf_token %}
+      <table align="center">
+        <tr style="line-height:50px;">
+          <td><label for="UserName" style="color:#F75000" >UserName</label></td>
+          <td><input name="username" id="UserName" type="text" class="form-control" placeholder="UserName" aria-describedby="basic-addon1"  style="width: 180px;"></td>
+        </tr>
+
+        <tr style="line-height:50px;">
+          <td><label for="PassWord" class="col-sm-2 control-label" style="color:#F75000" >PassWord</label></td>
+          <td><input name="password" id="PassWord" type="password" class="form-control" placeholder="PassWord" aria-describedby="basic-addon1" style="width: 180px;"></td>
+        </tr>
+
+        <tr>
+          <td colspan="2">
+            <button type="submit" style="width:320px;height:50px;font-size:18px" class="btn btn-primary" >Login In</button>
+          </td>
+        </tr>
+      </table>
+    </form>
   </div>
-</div>
+</body>
 
 </html>

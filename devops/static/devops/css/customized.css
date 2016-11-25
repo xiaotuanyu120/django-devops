@@ -101,3 +101,51 @@ hr.style-seven:before { /* Not really supposed to work, but does */
 	    padding: 0 0.25em;
 	    background: white;
 	}
+
+
+/*for ajax waitting effect*/
+#breath-light {
+	/*padding: 7px;*/
+	line-height:1.42857143;
+	display:inline-block;
+	padding:6px 12px;
+	margin-bottom:0;
+	font-size:14px;
+	font-weight:400;
+  border-radius: 3px;
+	text-align:center;
+	vertical-align:middle;
+
+
+  background: SPRINGGREEN;
+
+  box-shadow: 0 0 60px #FFFFFF;
+
+  -webkit-animation: breath 3s;
+          animation: breath 3s;
+
+  -webkit-animation-iteration-count:infinite;
+          animation-iteration-count:infinite;
+
+}
+
+@-webkit-keyframes breath {
+  0%    {opacity: 0.1;}
+  60%   {opacity:   1;}
+  100%  {opacity: 0.1;}
+}
+@-o-keyframes breath {
+  0%    {opacity: 0.1;}
+  60%   {opacity:   1;}
+  100%  {opacity: 0.1;}
+}
+@-moz-keyframes breath {
+  0%    {opacity: 0.1;}
+  60%   {opacity:   1;}
+  100%  {opacity: 0.1;}
+}
+@keyframes breath {
+  0%    {opacity: 0.1;}
+  60%   {opacity:   1;}
+  100%  {opacity: 0.1;}
+}
