@@ -109,3 +109,6 @@ AUTH_PROFILE_MODULE = 'devops.UserProfile'
 # ansible setting
 ANSIBLE_DIR = '/home/ansible-tomcat'
 ANSIBLE_PLAYBOOK_PATH = '/usr/bin/ansible-playbook'
+
+# views's function permission list
+DASHBOARD_USERS = ["admin", "danny", "zack", "gsmcyw", "jim", "francis"]

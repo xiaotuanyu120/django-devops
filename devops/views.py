@@ -9,13 +9,16 @@ from subprocess import check_output, Popen
 from django.http import *
 from django.shortcuts import render,render_to_response,redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.utils import timezone
 
-from .models import Host, Brand, Record
+from .models import Host, Brand, Record, BackupRecord
 from .forms import PasswordChangeFormCustom
 from .hosts_parser import HostsParser
 
@@ -181,6 +184,15 @@ def user_ip(input):
         return input.META.get('REMOTE_ADDR')
 
 
+def check_permission(user):
+    allowed_user = settings.DASHBOARD_USERS
+    if user.username not in allowed_user:
+        return False
+    else:
+        return True
+
+
+@user_passes_test(check_permission)
 @login_required
 def dashboard(request):
     hosts = Host.objects.all()
@@ -211,3 +223,27 @@ def ansible_hosts(request):
         "sub_group": sub_group
     }
     return render(request, "devops/ansible_hosts.html", context)
+
+
+@csrf_exempt
+def bbs_backup_api(request):
+    if request.POST:
+        try:
+            record = BackupRecord(brand_bbs = request.POST["brand_bbs"],
+                                  host_ip = request.POST["host_ip"],
+                                  backup_result = request.POST["backup_result"],)
+            record.save()
+        except:
+            print sys.exc_info()
+            context = {"result": "FAILED"}
+            return HttpResponse(json.dumps(context), content_type = "application/json")
+        context = {"result": "SUCCESSED"}
+        return HttpResponse(json.dumps(context), content_type = "application/json")
+    return HttpResponseNotFound('<h1>Page not found</h1>')
+
+
+@login_required
+def bbs_backup_record(request):
+    records = BackupRecord.objects.all().values()
+    context = {"records": records}
+    return render(request,"devops/bbs_backup_record.html", context)

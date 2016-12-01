@@ -50,3 +50,10 @@ class Record(models.Model):
     cmd = models.CharField(max_length=50, verbose_name="命令")
     action = models.CharField(max_length=5, choices=action_list, verbose_name="动作")
     action_time = models.DateTimeField(auto_now_add=True, auto_now=False, verbose_name="执行时间")
+
+
+class BackupRecord(models.Model):
+    brand_bbs = models.CharField(max_length=20, verbose_name="论坛品牌")
+    host_ip = models.GenericIPAddressField(verbose_name="论坛ip")
+    backup_result = models.CharField(max_length=10, verbose_name="备份结果")
+    backup_date = models.DateTimeField(auto_now_add=True, auto_now=False, verbose_name="备份时间")
