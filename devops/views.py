@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import os
 import sys
 import json
 from datetime import datetime
-from subprocess import check_output, Popen
+from subprocess import check_output
 
-from django.http import *
-from django.shortcuts import render,render_to_response,redirect
+# from django.http import *
+from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseNotFound
+from django.shortcuts import render, render_to_response, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login, logout
@@ -16,7 +17,6 @@ from django.template import RequestContext
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from django.utils import timezone
 
 from .models import Host, Brand, Record, BackupRecord
 from .forms import PasswordChangeFormCustom
@@ -44,7 +44,8 @@ def login_user(request):
             if user.is_active:
                 login(request, user)
                 return HttpResponseRedirect('/home/')
-    return render_to_response('devops/login.html', context_instance=RequestContext(request))
+    return render_to_response('devops/login.html',
+                              context_instance=RequestContext(request))
 
 
 @login_required
@@ -70,9 +71,10 @@ def profile(request):
     }
     if request.POST:
         if form.is_valid():
-            old = request.POST.get("oldpassword")
+            # old = request.POST.get("oldpassword")
             new = request.POST.get("newpassword")
-            new2 = request.POST.get("repeatnewpassword")
+            # new2 = request.POST.get("repeatnewpassword")
+            # >>> 这里需要添加验证旧密码验证，和新密码重复匹配
             u = User.objects.get(username=request.user.username)
             u.set_password(new)
             u.save()
@@ -99,8 +101,10 @@ def _record(record_list):
 
 @login_required
 def record(request):
-    filter_fields = {f.verbose_name: f.name for f in Record._meta.get_fields() \
-            if f.verbose_name not in ['ID', u'命令', u'动作']}
+    record_fileds = Record._meta.get_fields()
+    banned_fields = ['ID', u'命令', u'动作']
+    filter_fields = {f.verbose_name: f.name for f in record_fileds
+                     if f.verbose_name not in banned_fields}
     filter_str = str(datetime.now()).split()[0]
     filter_field = 'action_time'
     if request.POST.get('filter_str') and request.POST.get('filter_field'):
@@ -109,16 +113,14 @@ def record(request):
     filter_field_contains = '%s__contains' % filter_field
     my_filter = {}
     my_filter[filter_field_contains] = filter_str
-    try:
-        records = Record.objects.filter(**my_filter).order_by('-action_time', 'user').values()
-    except:
-        records = Record.objects.filter(action_time__contains=filter_str).order_by('-action_time', 'user').values()
+    records = Record.objects.filter(**my_filter)\
+        .order_by('-action_time', 'user').values()
 
     context = {
         'records': records,
         'filter_fields': filter_fields
     }
-    return render(request,"devops/record.html", context)
+    return render(request, "devops/record.html", context)
 
 
 def _execute(cmd):
@@ -145,7 +147,8 @@ def execute(request):
         yml_file = "%s/%s" % (ansible_dir, 'main.yml')
         selbrand = request.POST['selbrand']
         sertype = request.POST['sertype']
-        args = "host=%s_%s" % (Brand.objects.filter(name=selbrand).values()[0]["brand"], sertype)
+        brand_value = Brand.objects.filter(name=selbrand).values()[0]["brand"]
+        args = "host=%s_%s" % (brand_value, sertype)
         cmd = [ansible_playbook_path, '-i', inventory, yml_file, "-e", args]
         cmd_exec = _execute(cmd)
         stdout = cmd_exec['stdout']
@@ -173,7 +176,8 @@ def execute(request):
             e = sys.exc_info()[0]
             print "error" + str(e)
 
-        return HttpResponse(json.dumps(stdout), content_type = "application/json")
+        return HttpResponse(json.dumps(stdout),
+                            content_type="application/json")
     return HttpResponseNotFound('<h1>Page not found</h1>')
 
 
@@ -229,16 +233,18 @@ def ansible_hosts(request):
 def bbs_backup_api(request):
     if request.POST:
         try:
-            record = BackupRecord(brand_bbs = request.POST["brand_bbs"],
-                                  host_ip = request.POST["host_ip"],
-                                  backup_result = request.POST["backup_result"],)
+            record = BackupRecord(brand_bbs=request.POST["brand_bbs"],
+                                  host_ip=request.POST["host_ip"],
+                                  backup_result=request.POST["backup_result"],)
             record.save()
         except:
             print sys.exc_info()
             context = {"result": "FAILED"}
-            return HttpResponse(json.dumps(context), content_type = "application/json")
+            return HttpResponse(json.dumps(context),
+                                content_type="application/json")
         context = {"result": "SUCCESSED"}
-        return HttpResponse(json.dumps(context), content_type = "application/json")
+        return HttpResponse(json.dumps(context),
+                            content_type="application/json")
     return HttpResponseNotFound('<h1>Page not found</h1>')
 
 
@@ -246,4 +252,4 @@ def bbs_backup_api(request):
 def bbs_backup_record(request):
     records = BackupRecord.objects.all().values()
     context = {"records": records}
-    return render(request,"devops/bbs_backup_record.html", context)
+    return render(request, "devops/bbs_backup_record.html", context)
